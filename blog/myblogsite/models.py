@@ -3,13 +3,12 @@ from django.utils import timezone
 from django.conf import settings 
 
 
-# Create your models here.
+#best practice is to define model managers at the top before 
 class PublishedManager(models.Manager):
-   def get_queryset(self):
-      return(
-         super().get_queryset().filter(status=Post.status.PUBLISHED)
-      )
-#data model for blog post. 
+    def get_queryset(self):
+        return super().get_queryset().filter(status='PB')  # Use 'PB' directly instead of self.model.Status
+
+# Create your models here.
 class Post(models.Model):
    '''
    A ommon frature for blogs is to save post as drafts until they are published, so we add a status field to allow us manage 
@@ -41,7 +40,7 @@ class Post(models.Model):
    updated = models.DateTimeField(auto_now=True)
    status = models.CharField(
       max_length=2,
-      choices=Status,
+      choices=Status.choices,
       default=Status.DRAFT
    )
    '''
