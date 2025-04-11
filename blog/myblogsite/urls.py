@@ -1,15 +1,19 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    PostViewSet, CategoryViewSet,
+    TagViewSet, UserViewSet,
+    CustomTokenObtainPairView
+)
 
-app_name = 'myblogsite'
+router = DefaultRouter()
+router.register(r'posts', PostViewSet)
+router.register(r'categories', CategoryViewSet)
+router.register(r'tags', TagViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
-   #path('', views.post_list, name='post_list'),
-   path('', views.PostListView.as_view(),
-        name = 'post_list'
-        ),
-   #path('<int:id>/', views.post_detail, name='post_detail'),
-   path('<int:year>/<int:month>/<int:day>/<slug:post>/',
-         views.post_detail,
-         name='post_detail'),
+    path('', include(router.urls)),
+    path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

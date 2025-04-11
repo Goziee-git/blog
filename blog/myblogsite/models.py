@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
-from django.conf import settings 
+from django.conf import settings
 from django.urls import reverse
+from django.contrib.auth.models import AbstractUser
 
 
 #best practice is to define model managers at the top before 
@@ -10,6 +11,27 @@ class PublishedManager(models.Manager):
         return super().get_queryset().filter(status='PB')  # Use 'PB' directly instead of self.model.Status
 
 # Create your models here.
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'categories'
+
+    def __str__(self):
+        return self.name
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 class Post(models.Model):
    '''
    A ommon feature for blogs is to save post as drafts until they are published, so we add a status field to allow us manage 
@@ -28,7 +50,15 @@ class Post(models.Model):
       on_delete=models.CASCADE,
       related_name='blog_posts'
    )
-   body = models.TextField() #stores the body of the post. TestField that translates into a text column in the SQL db
+   body = models.TextField() #stores the body of the post. TextField that translates into a text column in the SQL db
+   category = models.ForeignKey(
+       Category,
+       on_delete=models.SET_NULL,
+       null=True,
+       blank=True,
+       related_name='posts'
+   )
+   tags = models.ManyToManyField(Tag, blank=True)
    publish = models.DateTimeField(default=timezone.now) #translares into a DATETIME colun in the SQL db
    '''
    in Django5, another method to define default values for model fields is usinf database computed default values, allowing for the use of underlying Db functions 

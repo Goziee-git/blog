@@ -1,45 +1,60 @@
+from rest_framework import viewsets, filters, permissions
+from .models import Post, Category, Tag
+from .serializers import (
+    PostSerializer, CategorySerializer,
+    TagSerializer, UserSerializer,
+    CustomTokenObtainPairSerializer
+)
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth.models import User
+from rest_framework import status
 
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'author', 'status', 'tags']
+    search_fields = ['title', 'body', 'author__username']
+    ordering_fields = ['publish', 'created', 'updated']
 
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.shortcuts import render, get_object_or_404
-from .models import Post
-#we can use class based views instead of function based views to list all post, TO DO THIS WE USE THE GENERIC listView
-from django.views.generic import ListView
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
-#generic class based views are used as inheritances
-class PostListView(ListView):
+    @action(detail=False, methods=['get'])
+    def by_category(self, request, category_slug=None):
+        posts = Post.objects.filter(category__slug=category_slug)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
 
-    queryset = Post.published.all()
-    context_object_name = 'posts'
-    paginate_by = 3
-    template_name = 'blogs/post/list.html'
-    '''
-def post_list(request):
-    posts = Post.published.all()
-    paginator = Paginator(post_list, 3)#Psginator here is an inbuilt function that takes the post_list, and a number as values(params)
-    page_number = request.GET.get('page', 1) #retrieve page GET HTTP parameter and store in the pagenumber variable
-    try:
-        posts = paginator.page(page_number)
-    except PageNotAnInteger:
-        #if the page_number request request does not include an integer
-        posts = paginator.page(1)
-    except EmptyPage:
-        #if page_number is out of range get the last page of results given by paginator.page(page_number)
-        posts = paginator.page(paginator.num_pages)
-    '''
-return render(
-        request,
-        'blogs/post/list.html',
-        {'posts': posts}
-    )
+    @action(detail=False, methods=['get'])
+    def by_author(self, request, username=None):
+        posts = Post.objects.filter(author__username=username)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
 
-def post_detail(request, year, month, day, post):
-    post = get_object_or_404(Post,
-                            status=Post.Status.PUBLISHED,
-                            slug=post,
-                            publish__year=year,
-                            publish__month=month,
-                            publish__day=day)
-    return render(request,
-                 'blogs/post/detail.html',  # Changed to match your structure
-                 {'post': post})
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'slug'
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    lookup_field = 'slug'
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
