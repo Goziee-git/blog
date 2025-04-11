@@ -33,15 +33,6 @@ return render(
         {'posts': posts}
     )
 
-
-
-
-
-
-
-
-
-
 def post_detail(request, year, month, day, post):
     post = get_object_or_404(Post,
                             status=Post.Status.PUBLISHED,
