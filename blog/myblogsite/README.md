@@ -250,3 +250,69 @@ on template tags, template variables, and template filters:
 }}.
 You can see all the built-in template tags and filters at https://docs.djangoproject.com/en/5.0/
 ref/templates/builtins/
+
+DJANGO MANAGEMENT COMMANDS USED IN THIS PROJECT 
+To create the file structure for a new Django project named mysite, we used the following command:
+>> django-admin startproject mysite
+To create the file structure for a new Django application named blog:
+>> python manage.py startapp blog
+To apply all database migrations:
+>> python manage.py migrate
+To create migrations for the models of the blog application:
+>> python manage.py makemigrations blog
+To view the SQL statements that will be executed with the first migration of the blog application:
+>> python manage.py sqlmigrate blog 0001
+To run the Django development server:
+>> python manage.py runserver
+To run the development server specifying host/port and settings file:
+>> python manage.py runserver 127.0.0.1:8001 --settings=mysite.settings
+To run the Django shell:
+>> python manage.py shell
+To create a superuser using the Django authentication framework:
+>> python manage.py createsuperuser
+For the full list of available management commands, check out https://docs.djangoproject.com/
+en/5.0/ref/django-admin/.
+
+STUDY MORE HERE 
+Django URL dispatcher: https://docs.djangoproject.com/en/5.0/topics/http/urls/
+• Django template language: https://docs.djangoproject.com/en/5.0/ref/templates/
+language/
+• Built-in template tags and filters: https://docs.djangoproject.com/en/5.0/ref/templates/
+builtins/
+• Django management commands: https://docs.djangoproject.com/en/5.0/ref/djangoadmin/
+
+chapter 2
+- USING CANONICAL URLS
+for a site where different pages will display a particular post, a canonical url is used as the single main URL that displays the master page for all the post. Think of it like on a blog where u have all the post on a particular page, then on sunbsequent pages we can still see some of the posts. it is the most Representative page for specific content. it allows us to specify the URL for the master copy of a particular post, or page it references. Django allows us to use the get_absolute_url() method in the models to return the canonical URL for the object. django provides URL resolvers that allow me to build URLS dynamically using their names and any required parameters. in this case we use the reverse() function of the django.urls module. This function will build the URL dynamically using the URL name defined in the URL patterns. Building an SEO friendly URL means giving the urls to my views an identity that makes it unique anytime a request for that views is made, so in our example we first defined a canonical URL for the post_list view by using the get_absolute_url in the models.py file
+- to add SEO friendly urls we made some edits to the urlpatterns for the post_details, using some path converters: The int path converter is used for the year, month, and day parameters, whereas the slug path converter is used for the post parameter. You learned about path converters in the previous chapter. You 
+can see all path converters provided by Django at https://docs.djangoproject.com/en/5.0/topics/
+http/urls/#path-converters.
+
+- ADDING PAGINATION
+Django has a built-in pagination class that allows you to manage paginated data easily. You can define 
+the number of objects you want to be returned per page and you can retrieve the posts that correspond 
+to the page requested by the user.
+in the views.py this are the steps we took
+1. We instantiate the Paginator class with the number of objects to return per page. We will 
+display three posts per page.
+2. We retrieve the page GET HTTP parameter and store it in the page_number variable. This parameter contains the requested page number. If the page parameter is not in the GET parameters of the request, we use the default value 1 to load the first page of results.
+3. We obtain the objects for the desired page by calling the page() method of Paginator. This 
+method returns a Page object that we store in the posts variable.
+4. We pass the posts object to the template.
+
+USING CLASS BASED VIEWS 
+Class-based views are an alternative way to implement views as Python objects instead of functions. Since a view is a function that takes a web request and returns a web response, you can also define your views as class methods. Django provides base view classes that you can use to implement your 
+own views. All of them inherit from the View class, which handles HTTP method dispatching and 
+other common functionalities.
+WHY USE CLASS BASED VIEWS
+Class-based views offer some advantages over function-based views that are useful for specific use 
+cases. Class-based views allow you to:
+• Organize code related to HTTP methods, such as GET, POST, or PUT, in separate methods, instead 
+of using conditional branching
+• Use multiple inheritance to create reusable view classes (also known as mixins)
+
+CREATING FORMS IN DJANGO
+- DJANGO has a built-in forms framework that allows for the creation forms easily. The framework makes it simple to define the fields of the form, specify how they have to be displayed and indicate how they have to validate input data. also offers a flexible way to render forms in the HTML and handle data.
+DJANGO has two base classes to build forms:
+- Form: allows for building standard forms by defining fields and validations.
+- ModelForm: this allows for building forms tied to model instances. It provides all the functionalities of the base Form class

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings 
+from django.urls import reverse
 
 
 #best practice is to define model managers at the top before 
@@ -11,7 +12,7 @@ class PublishedManager(models.Manager):
 # Create your models here.
 class Post(models.Model):
    '''
-   A ommon frature for blogs is to save post as drafts until they are published, so we add a status field to allow us manage 
+   A ommon feature for blogs is to save post as drafts until they are published, so we add a status field to allow us manage 
    the status of blog post 
    '''
    class Status(models.TextChoices):
@@ -21,7 +22,7 @@ class Post(models.Model):
    objects = models.Manager() #the defaut manager
    published = PublishedManager() #our custom manager
    title = models.CharField(max_length=250) #the post tile
-   slug = models.SlugField(max_length=250) #SlugField translates in a VARCHAR column ib the SQL db
+   slug = models.SlugField(max_length=250, unique_for_date='publish') #SlugField translates in a VARCHAR column ib the SQL db, unique_for_date ensures that the slug field is never a duplicate for the anay post on the same publish date
    author = models.ForeignKey(
       settings.AUTH_USER_MODEL,
       on_delete=models.CASCADE,
@@ -59,6 +60,22 @@ class Post(models.Model):
          models.Index(fields=['-publish']),
       ]
 
-
    def __str__(self):
       return self.title
+
+   
+   '''
+   here we implement the get_absolute_url() method for defining an SEO friendly URL for the post_detail views
+   note that it is the reverse() function that builds the URLs dynamically, in this case utilizing the namespace of the app
+   and the post_detail view
+   '''
+
+   def get_absolute_url(self):
+      return reverse(
+         'myblogsite:post_detail',
+         args=[self.publish.year,
+               self.publish.month,
+               self.publish.day,
+               self.slug,
+               ]
+      )
